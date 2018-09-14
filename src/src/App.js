@@ -68,7 +68,6 @@ class App extends Component {
         super(props);
 
         let path = decodeURIComponent(window.location.hash).replace(/^#/, '');
-        let query = '';  //Added
 
         this.state = {
             menuFixed:      (typeof Storage !== 'undefined') ? window.localStorage.getItem('menuFixed') === '1' : false,
@@ -123,25 +122,23 @@ class App extends Component {
 
     //Added
     updateData() {
-        this.setState({ temperature: Math.round(citiesWeather[currentCity].main.temp  – 273.15) });
+        this.setState({temperature: Math.round(this.citiesWeather[this.currentCity].main.temp - 273.15) });
     }    
          
-    //Added
+    // Added
     fetchData() {
-        let cities = [];
-        let citiesWeather = [];
-        let currentCity = 0;
+        this.citiesWeather = [];
+        this.currentCity = 0;
         
-        if (citiesWeather[currentCity]) {
+        if (this.citiesWeather[this.currentCity]) {
             this.updateData();
-            }
-        else {
-            Utilsw.get(cities[currentCity])
-            .then(function(data) {
-                citiesWeather[currentCity] = data;
-                this.updateData();
-                }.bind(this));
-            }
+        } else {
+            Utilsw.get(this.cities[this.currentCity])
+                .then(data => {
+                    this.citiesWeather[this.currentCity] = data;
+                    this.updateData();
+                });
+        }
     }      
 
 
@@ -408,29 +405,27 @@ class App extends Component {
         callback && callback();
     }
 
-    //Added    
+    // Added
     componentWillMount() {
-        query = location.search.split('=')[1];
-        
+        const query = window.location.search.split('=')[1];
+        this.cities = [];
+
         if (query !== undefined) {
-            cities = query.split(',');
-            if (cities.length > 1) {
-                setInterval((function() {
-                    currentCity++;
-                    if (currentCity === cities.length) {
-                        currentCity = 0;
-                        }
+            this.cities = query.split(',');
+            if (this.cities.length > 1) {
+                setInterval(() => {
+                    this.currentCity++;
+                    if (this.currentCity === this.cities.length) {
+                        this.currentCity = 0;
+                    }
                     this.fetchData();
-                    }).bind(this), 5000);
-                }
+                }, 5000);
             }
-        else {
-            cities[0] = 'Berlin';
-            }
+        } else {
+            this.cities[0] = 'Berlin';
+        }
                 
-        setInterval(function() {
-            citiesWeather = []; 
-        }, (1000*60*5));
+        setInterval(() => this.citiesWeather = [], (1000 * 60 * 5));
         
         this.fetchData();
    }
@@ -1430,9 +1425,11 @@ class App extends Component {
                     {this.getStateList(useBright)}
                     {this.getErrorDialog(useBright)}
                     {this.getSpeechDialog(useBright)}
-                    //Added , will this display break anything? Display the weather temperature
-                    <div className=”cTemp”><span className=”cTempnumber”>{this.state.temperature}</span></div>  	
-                    <label className="cLabeltemp">{ this.state.name } />                        
+                    {
+                        // Added , will this display break anything? Display the weather temperature
+                    }
+                    <div className="cTemp"><span className="cTempnumber">{this.state.temperature}</span></div>
+                    <label className="cLabeltemp">{this.state.name}</label>
                 </div>
             );
         }
